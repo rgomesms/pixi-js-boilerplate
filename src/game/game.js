@@ -1,33 +1,67 @@
 import * as PIXI from 'pixi.js';
+import { Keyboard, setupControls } from "./keyboard";
 
-// The application will create a renderer using WebGL, if possible,
-// with a fallback to a canvas render. It will also setup the ticker
-// and the root stage PIXI.Container
-const app = new PIXI.Application();
+const game = new PIXI.Application({
+    //   width: 800,
+    //   height: 800,
+    //   backgroundColor: 0x9e9e9e,
+    //   resolution: window.devicePixelRatio,
+    //   autoDensity: true,
+    //   legacy: true
+});
+document.body.appendChild(game.view);
 
-// The application will create a canvas element for you that you
-// can then insert into the DOM
-document.body.appendChild(app.view);
+let mainContainer = new PIXI.Container();
+game.stage.addChild(mainContainer);
 
-// load the texture we need
-app.loader.add('bunny', './assets/bunny.png').load((loader, resources) => {
+// Declare as variaveis aqui
+let bunny;
+
+function bunnySetup() {
     // This creates a texture from a 'bunny.png' image
-    const bunny = new PIXI.Sprite(resources.bunny.texture);
+    bunny = new PIXI.Sprite(PIXI.Texture.from("bunny"))
 
     // Setup the position of the bunny
-    bunny.x = app.renderer.width / 2;
-    bunny.y = app.renderer.height / 2;
+    bunny.x = game.renderer.width / 2;
+    bunny.y = game.renderer.height / 2;
 
     // Rotate around the center
     bunny.anchor.x = 0.5;
     bunny.anchor.y = 0.5;
 
     // Add the bunny to the scene we are building
-    app.stage.addChild(bunny);
+    game.stage.addChild(bunny);
+
+}
+
+function setup() {
+    setupControls();
+    bunnySetup();
 
     // Listen for frame updates
-    app.ticker.add(() => {
-         // each frame we spin the bunny around a bit
-        bunny.rotation += 0.01;
-    });
-});
+    game.ticker.add(play);
+}
+
+function update() {
+    bunny.rotation += 0.01;
+}
+
+let fps = 60;
+let now;
+let then = Date.now();
+let interval = 1000 / fps;
+let delta;
+function play() {
+    now = Date.now();
+    delta = now - then;
+    if (delta > interval) {
+        update();
+        Keyboard.update();
+    }
+    then = now - (delta % interval);
+}
+
+
+const loader = new PIXI.Loader();
+loader.add('bunny', './assets/bunny.png');
+loader.load(setup);
